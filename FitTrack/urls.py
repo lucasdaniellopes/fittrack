@@ -16,17 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from core.views import TreinoViewSet, DietaViewSet, PlanoViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
-
-router = DefaultRouter()
-router.register(r'treinos', TreinoViewSet)
-router.register(r'dietas', DietaViewSet)
-router.register(r'planos', PlanoViewSet)
+from core.api.v1.routers import router as api_v1_router
+from django.views.generic import RedirectView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -38,9 +32,16 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('admin/', admin.site.urls),
+    path('api/v1/', include(api_v1_router.urls)),
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    # Redirecionamento de caminhos alternativos
+    path('swagger/', RedirectView.as_view(url='/api/docs/', permanent=True)),
+    path('docs/', RedirectView.as_view(url='/api/docs/', permanent=True)),
+    path('redoc/', RedirectView.as_view(url='/api/redoc/', permanent=True)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('', include(router.urls)),
+    # Redirecionamento da raiz para api/v1/
+    path('', RedirectView.as_view(url='/api/v1/', permanent=True), name='index'),
 ]
