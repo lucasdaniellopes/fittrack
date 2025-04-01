@@ -290,7 +290,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nome\": \"Treino A - Peito e Tríceps\",\n    \"descricao\": \"4x12 Supino Reto\\n4x12 Supino Inclinado\\n4x12 Crucifixo\\n4x12 Tríceps Corda\\n4x12 Tríceps Francês\",\n    \"duracao\": 60\n}"
+              "raw": "{\n    \"nome\": \"Treino A - Peito e Tríceps\",\n    \"descricao\": \"4x12 Supino Reto\\n4x12 Supino Inclinado\\n4x12 Crucifixo\\n4x12 Tríceps Corda\\n4x12 Tríceps Francês\",\n    \"duracao\": 60,\n    \"cliente\": 1\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/treinos/",
@@ -407,7 +407,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nome\": \"Dieta Low Carb\",\n    \"descricao\": \"Café da manhã: 2 ovos e abacate\\nLanche: Whey protein com água\\nAlmoço: Frango grelhado com legumes\\nLanche: Castanhas\\nJantar: Peixe com salada\",\n    \"calorias\": 1800\n}"
+              "raw": "{\n    \"nome\": \"Dieta Low Carb\",\n    \"descricao\": \"Café da manhã: 2 ovos e abacate\\nLanche: Whey protein com água\\nAlmoço: Frango grelhado com legumes\\nLanche: Castanhas\\nJantar: Peixe com salada\",\n    \"calorias\": 1800,\n    \"cliente\": 1\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/dietas/",

@@ -18,14 +18,18 @@ class PerfilSerializer(serializers.ModelSerializer):
         fields = ['id', 'usuario', 'tipo', 'tipo_display', 'telefone', 'data_nascimento']
 
 class TreinoSerializer(serializers.ModelSerializer):
+    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
+    
     class Meta:
         model = Treino
-        fields = '__all__'
+        fields = ['id', 'nome', 'descricao', 'duracao', 'cliente', 'cliente_nome', 'created_at', 'updated_at']
 
 class DietaSerializer(serializers.ModelSerializer):
+    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
+    
     class Meta:
         model = Dieta
-        fields = '__all__'
+        fields = ['id', 'nome', 'descricao', 'calorias', 'cliente', 'cliente_nome', 'created_at', 'updated_at']
 
 class TipoPlanoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,7 +44,7 @@ class ClienteSerializer(serializers.ModelSerializer):
         model = Cliente
         fields = ['id', 'nome', 'email', 'telefone', 'data_nascimento', 'altura', 'peso', 
                  'tipo_plano', 'tipo_plano_nome', 'data_inicio_plano', 'data_fim_plano',
-                 'treino_atual', 'dieta_atual', 'data_ultimo_treino', 'data_ultima_dieta',
+                 'data_ultimo_treino', 'data_ultima_dieta',
                  'trocas_exercicios_restantes', 'trocas_refeicoes_restantes', 'perfil']
 
 class HistoricoTreinoSerializer(serializers.ModelSerializer):

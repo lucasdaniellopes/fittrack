@@ -7,10 +7,10 @@ FitTrack é uma API RESTful para gerenciamento de treinos e dietas personalizado
 - **Autenticação JWT**: Sistema seguro de autenticação com tokens JWT
 - **Gerenciamento de Usuários**: Administração de diferentes perfis (admin, nutricionista, personal, cliente)
 - **Planos de Assinatura**: Diferentes níveis de planos com regras de negócio específicas
-- **Treinos Personalizados**: Criação e gerenciamento de treinos com exercícios
-- **Dietas Personalizadas**: Criação e gerenciamento de dietas com refeições
+- **Treinos Personalizados**: Criação e gerenciamento de treinos com exercícios vinculados a clientes específicos
+- **Dietas Personalizadas**: Criação e gerenciamento de dietas com refeições vinculadas a clientes específicos
 - **Sistema de Trocas**: Permite aos clientes solicitar trocas de exercícios e refeições conforme seu plano
-- **Histórico**: Registro de histórico de treinos e dietas para acompanhamento da evolução
+- **Histórico Automático**: Registro automático de histórico de treinos e dietas para acompanhamento da evolução
 
 ## Planos Disponíveis
 
@@ -91,6 +91,16 @@ FitTrack é uma API RESTful para gerenciamento de treinos e dietas personalizado
     - **serializers.py**: Serializers para conversão de dados
     - **permissions.py**: Classes de permissão personalizadas
     - **routers.py**: Configuração de rotas da API
+
+## Modelo de Dados
+
+O FitTrack implementa um modelo de dados que garante a personalização completa de treinos e dietas:
+
+- **Treinos pertencem a Clientes**: Cada treino é vinculado a um cliente específico
+- **Dietas pertencem a Clientes**: Cada dieta é vinculada a um cliente específico
+- **Exercícios pertencem a Treinos**: Cada exercício está vinculado a um treino específico
+- **Refeições pertencem a Dietas**: Cada refeição está vinculada a uma dieta específica
+- **Histórico Automático**: Ao criar um novo treino ou dieta, um registro é automaticamente adicionado ao histórico
 
 ## Documentação da API
 
