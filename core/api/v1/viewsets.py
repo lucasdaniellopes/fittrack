@@ -14,7 +14,19 @@ from .permissions import (IsAdminUser, IsNutricionistaUser, IsPersonalUser,
                         IsClienteUser, IsOwnerOrStaff, ReadOnly)
 from django.utils import timezone
 
-class TreinoViewSet(viewsets.ModelViewSet):
+class SoftDeleteModelViewSet(viewsets.ModelViewSet):
+    """
+    ModelViewSet customizado que implementa soft delete.
+    Ao invés de excluir o objeto do banco de dados, marca o campo deleted_at com a data atual.
+    """
+    @swagger_auto_schema(tags=['Default'])
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.deleted_at = timezone.now()
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class TreinoViewSet(SoftDeleteModelViewSet):
     queryset = Treino.objects.filter(deleted_at__isnull=True)
     serializer_class = TreinoSerializer
     
@@ -87,7 +99,7 @@ class TreinoViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class DietaViewSet(viewsets.ModelViewSet):
+class DietaViewSet(SoftDeleteModelViewSet):
     queryset = Dieta.objects.filter(deleted_at__isnull=True)
     serializer_class = DietaSerializer
     
@@ -158,7 +170,7 @@ class DietaViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class TipoPlanoViewSet(viewsets.ModelViewSet):
+class TipoPlanoViewSet(SoftDeleteModelViewSet):
     queryset = TipoPlano.objects.filter(deleted_at__isnull=True)
     serializer_class = TipoPlanoSerializer
     
@@ -194,7 +206,7 @@ class TipoPlanoViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class ClienteViewSet(viewsets.ModelViewSet):
+class ClienteViewSet(SoftDeleteModelViewSet):
     queryset = Cliente.objects.filter(deleted_at__isnull=True)
     serializer_class = ClienteSerializer
     
@@ -243,7 +255,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class HistoricoTreinoViewSet(viewsets.ModelViewSet):
+class HistoricoTreinoViewSet(SoftDeleteModelViewSet):
     queryset = HistoricoTreino.objects.filter(deleted_at__isnull=True)
     serializer_class = HistoricoTreinoSerializer
     
@@ -292,7 +304,7 @@ class HistoricoTreinoViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class HistoricoDietaViewSet(viewsets.ModelViewSet):
+class HistoricoDietaViewSet(SoftDeleteModelViewSet):
     queryset = HistoricoDieta.objects.filter(deleted_at__isnull=True)
     serializer_class = HistoricoDietaSerializer
     
@@ -341,7 +353,7 @@ class HistoricoDietaViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class ExercicioViewSet(viewsets.ModelViewSet):
+class ExercicioViewSet(SoftDeleteModelViewSet):
     queryset = Exercicio.objects.filter(deleted_at__isnull=True)
     serializer_class = ExercicioSerializer
     
@@ -394,7 +406,7 @@ class ExercicioViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class RefeicaoViewSet(viewsets.ModelViewSet):
+class RefeicaoViewSet(SoftDeleteModelViewSet):
     queryset = Refeicao.objects.filter(deleted_at__isnull=True)
     serializer_class = RefeicaoSerializer
     
@@ -447,7 +459,7 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class TrocaExercicioViewSet(viewsets.ModelViewSet):
+class TrocaExercicioViewSet(SoftDeleteModelViewSet):
     queryset = TrocaExercicio.objects.filter(deleted_at__isnull=True)
     serializer_class = TrocaExercicioSerializer
     
@@ -496,7 +508,7 @@ class TrocaExercicioViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class TrocaRefeicaoViewSet(viewsets.ModelViewSet):
+class TrocaRefeicaoViewSet(SoftDeleteModelViewSet):
     queryset = TrocaRefeicao.objects.filter(deleted_at__isnull=True)
     serializer_class = TrocaRefeicaoSerializer
     
@@ -550,8 +562,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     
     def get_permissions(self):
-        if self.action in ['list']:
-            permission_classes = [IsAuthenticated, IsAdminUser]
+        if self.action in ['list', 'me']:
+            permission_classes = [IsAuthenticated]
         elif self.action in ['retrieve', 'update', 'partial_update']:
             permission_classes = [IsAuthenticated, IsOwnerOrStaff]
         elif self.action in ['create', 'destroy']:
@@ -588,7 +600,10 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(tags=['Usuários'])
     def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     @action(detail=False, methods=['get'])
     @swagger_auto_schema(tags=['Usuários'])
@@ -597,7 +612,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class PerfilViewSet(viewsets.ModelViewSet):
+class PerfilViewSet(SoftDeleteModelViewSet):
     queryset = Perfil.objects.filter(deleted_at__isnull=True)
     serializer_class = PerfilSerializer
     
