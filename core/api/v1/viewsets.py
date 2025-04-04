@@ -15,10 +15,6 @@ from .permissions import (IsAdminUser, IsNutricionistaUser, IsPersonalUser,
 from django.utils import timezone
 
 class SoftDeleteModelViewSet(viewsets.ModelViewSet):
-    """
-    ModelViewSet customizado que implementa soft delete.
-    Ao invés de excluir o objeto do banco de dados, marca o campo deleted_at com a data atual.
-    """
     @swagger_auto_schema(tags=['Default'])
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
