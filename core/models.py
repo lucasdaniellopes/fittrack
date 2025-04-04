@@ -50,6 +50,7 @@ class Treino(BaseModel):
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
     duracao = models.IntegerField()
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='treinos', null=True)
     
     def __str__(self):
         return self.nome
@@ -58,6 +59,7 @@ class Dieta(BaseModel):
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
     calorias = models.IntegerField()
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, related_name='dietas', null=True)
     
 
     def __str__(self):
@@ -73,8 +75,6 @@ class Cliente(BaseModel):
     tipo_plano = models.ForeignKey(TipoPlano, on_delete=models.SET_NULL, null=True, blank=True, related_name='clientes')
     data_inicio_plano = models.DateField(null=True, blank=True)
     data_fim_plano = models.DateField(null=True, blank=True)
-    treino_atual = models.ForeignKey(Treino, on_delete=models.SET_NULL, null=True, blank=True, related_name='clientes')
-    dieta_atual = models.ForeignKey(Dieta, on_delete=models.SET_NULL, null=True, blank=True, related_name='clientes')
     perfil = models.OneToOneField(Perfil, on_delete=models.CASCADE, related_name='cliente', null=True, blank=True)
     
 

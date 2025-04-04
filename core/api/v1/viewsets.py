@@ -12,7 +12,7 @@ from .serializers import (TreinoSerializer, DietaSerializer, TipoPlanoSerializer
                         TrocaRefeicaoSerializer, UserSerializer, PerfilSerializer)
 from .permissions import (IsAdminUser, IsNutricionistaUser, IsPersonalUser, 
                         IsClienteUser, IsOwnerOrStaff, ReadOnly)
-
+from django.utils import timezone
 
 class TreinoViewSet(viewsets.ModelViewSet):
     queryset = Treino.objects.filter(deleted_at__isnull=True)
@@ -33,9 +33,11 @@ class TreinoViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'perfil'):
             if user.perfil.tipo == 'cliente' and hasattr(user.perfil, 'cliente'):
-                return Treino.objects.filter(deleted_at__isnull=True, clientes__perfil__usuario=user)
+                return Treino.objects.filter(deleted_at__isnull=True, cliente__perfil__usuario=user)
             elif user.perfil.tipo in ['admin', 'personal']:
                 return Treino.objects.filter(deleted_at__isnull=True)
+        if user.is_superuser:
+            return Treino.objects.filter(deleted_at__isnull=True)
         return Treino.objects.none()
     
     @swagger_auto_schema(tags=['Treinos'])
@@ -48,7 +50,29 @@ class TreinoViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(tags=['Treinos'])
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+        
+        # Se a criação do treino foi bem-sucedida, criar um registro no histórico
+        if response.status_code == 201:
+            treino_id = response.data.get('id')
+            cliente_id = response.data.get('cliente')
+            
+            if treino_id and cliente_id:
+                treino = Treino.objects.get(id=treino_id)
+                cliente = Cliente.objects.get(id=cliente_id)
+                
+                # Criar registro no histórico
+                HistoricoTreino.objects.create(
+                    cliente=cliente,
+                    treino=treino,
+                    data_inicio=timezone.now().date()
+                )
+                
+                # Atualizar a data do último treino do cliente
+                cliente.data_ultimo_treino = timezone.now().date()
+                cliente.save(update_fields=['data_ultimo_treino'])
+        
+        return response
     
     @swagger_auto_schema(tags=['Treinos'])
     def update(self, request, *args, **kwargs):
@@ -82,9 +106,11 @@ class DietaViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'perfil'):
             if user.perfil.tipo == 'cliente' and hasattr(user.perfil, 'cliente'):
-                return Dieta.objects.filter(deleted_at__isnull=True, clientes__perfil__usuario=user)
+                return Dieta.objects.filter(deleted_at__isnull=True, cliente__perfil__usuario=user)
             elif user.perfil.tipo in ['admin', 'nutricionista']:
                 return Dieta.objects.filter(deleted_at__isnull=True)
+        if user.is_superuser:
+            return Dieta.objects.filter(deleted_at__isnull=True)
         return Dieta.objects.none()
     
     @swagger_auto_schema(tags=['Dietas'])
@@ -97,7 +123,27 @@ class DietaViewSet(viewsets.ModelViewSet):
     
     @swagger_auto_schema(tags=['Dietas'])
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+        
+        if response.status_code == 201:
+            dieta_id = response.data.get('id')
+            cliente_id = response.data.get('cliente')
+            
+            if dieta_id and cliente_id:
+                dieta = Dieta.objects.get(id=dieta_id)
+                cliente = Cliente.objects.get(id=cliente_id)
+                
+                HistoricoDieta.objects.create(
+                    cliente=cliente,
+                    dieta=dieta,
+                    data_inicio=timezone.now().date()
+                )
+                
+                
+                cliente.data_ultima_dieta = timezone.now().date()
+                cliente.save(update_fields=['data_ultima_dieta'])
+        
+        return response
     
     @swagger_auto_schema(tags=['Dietas'])
     def update(self, request, *args, **kwargs):
@@ -314,9 +360,13 @@ class ExercicioViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'perfil'):
             if user.perfil.tipo == 'cliente' and hasattr(user.perfil, 'cliente'):
-                return Exercicio.objects.filter(deleted_at__isnull=True, treino__clientes__perfil__usuario=user)
+                # Cliente vê apenas exercícios de seus treinos
+                return Exercicio.objects.filter(deleted_at__isnull=True, treino__cliente__perfil__usuario=user)
             elif user.perfil.tipo in ['admin', 'personal']:
+                # Admin e personal veem todos os exercícios
                 return Exercicio.objects.filter(deleted_at__isnull=True)
+        if user.is_superuser:
+            return Exercicio.objects.filter(deleted_at__isnull=True)
         return Exercicio.objects.none()
     
     @swagger_auto_schema(tags=['Treinos'])
@@ -363,9 +413,13 @@ class RefeicaoViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'perfil'):
             if user.perfil.tipo == 'cliente' and hasattr(user.perfil, 'cliente'):
-                return Refeicao.objects.filter(deleted_at__isnull=True, dieta__clientes__perfil__usuario=user)
+                # Cliente vê apenas refeições de suas dietas
+                return Refeicao.objects.filter(deleted_at__isnull=True, dieta__cliente__perfil__usuario=user)
             elif user.perfil.tipo in ['admin', 'nutricionista']:
+                # Admin e nutricionista veem todas as refeições
                 return Refeicao.objects.filter(deleted_at__isnull=True)
+        if user.is_superuser:
+            return Refeicao.objects.filter(deleted_at__isnull=True)
         return Refeicao.objects.none()
     
     @swagger_auto_schema(tags=['Dietas'])
